@@ -7,6 +7,7 @@ import React, { useState, useEffect } from 'react';
 import LoginView from './components/LoginView.jsx';
 import MoodTrackerView from './components/MoodTrackerView.jsx';
 import JournalView from './components/JournalView.jsx';
+import VerifyEmail from './components/VerifyEmail.jsx';
 import { LogOut, Heart, BookOpen, Smile, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { authApi } from './api/auth.js';
@@ -30,6 +31,9 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState(() => {
     return authApi.getUser();
   });
+  
+  // Check if we're on verify-email page
+  const isVerifyEmailPage = window.location.pathname === '/verify-email';
 
   // Since the user requested only login, journal, and mood tracker pages,
   // we default the active tab to 'mood' once signed in, allowing easy toggle with 'journal'.
@@ -174,7 +178,18 @@ export default function App() {
       {/* Main Core Content Stage */}
       <main className="flex-1 w-full max-w-4xl mx-auto px-4 py-8 relative">
         <AnimatePresence mode="wait">
-          {!currentUser ? (
+          {isVerifyEmailPage ? (
+            <motion.div
+              layout
+              key="verify-email-view"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex justify-center items-center py-6"
+            >
+              <VerifyEmail />
+            </motion.div>
+          ) : !currentUser ? (
             <motion.div
               layout
               key="auth-view"
