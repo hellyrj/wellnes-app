@@ -1,0 +1,6 @@
+{
+  "name": "Young Mental Wellness App",
+  "description": "A beautiful, calming self-care companion featuring user authentication, mood tracking with pastel icons, and a personal journal with complete search and edit capabilities.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
