@@ -3,17 +3,22 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { CheckCircle, XCircle, Loader2, Mail } from 'lucide-react';
 import { motion } from 'motion/react';
-import axios from 'axios';
+import axiosInstance from '../api/axios';
 
 export default function VerifyEmail() {
   const [status, setStatus] = useState('loading'); // loading, success, error
   const [message, setMessage] = useState('');
+  const hasVerified = useRef(false);
 
   useEffect(() => {
     const verifyEmail = async () => {
+      // Prevent duplicate calls using ref
+      if (hasVerified.current) return;
+      hasVerified.current = true;
+      
       const urlParams = new URLSearchParams(window.location.search);
       const token = urlParams.get('token');
 
@@ -24,8 +29,8 @@ export default function VerifyEmail() {
       }
 
       try {
-        const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
-        const response = await axios.get(`${API_BASE_URL}/auth/verify-email?token=${token}`);
+        // Use the existing axios instance with proper CORS handling
+        const response = await axiosInstance.get(`/auth/verify-email?token=${token}`);
         
         setStatus('success');
         setMessage(response.data.message || 'Email verified successfully!');

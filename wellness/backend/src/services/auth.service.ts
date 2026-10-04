@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import { UserRepository } from '../repositories/user.repository';
-import { generateTokens, verifyToken } from '../utils/jwt';
+import { generateTokens, generateVerificationToken, verifyToken } from '../utils/jwt';
 import { sendVerificationEmail, sendPasswordResetEmail } from '../utils/email';
 import { toUserResponse } from '../models/user.model';
 import type {
@@ -41,8 +41,8 @@ export class AuthService {
       name: data.name,
     });
 
-    // Generate verification token
-    const verificationToken = generateTokens(user.id, user.email).accessToken;
+    // Generate verification token (24 hour expiry)
+    const verificationToken = generateVerificationToken(user.id, user.email);
     await this.userRepository.setVerificationToken(user.id, verificationToken);
 
     // Send verification email (don't await - fire and forget)
@@ -102,6 +102,13 @@ export class AuthService {
     // Find user by verification token
     const user = await this.userRepository.findByVerificationToken(token);
     if (!user) {
+      // Check if user is already verified (token was already used)
+      if (decoded && decoded.userId) {
+        const existingUser = await this.userRepository.findById(decoded.userId);
+        if (existingUser && existingUser.isEmailVerified) {
+          return { message: 'Email already verified' };
+        }
+      }
       throw new Error('Invalid verification token');
     }
 

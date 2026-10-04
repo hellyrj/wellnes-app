@@ -16,6 +16,15 @@ export const generateTokens = (userId: string, email: string) => {
   return { accessToken, refreshToken };
 };
 
+export const generateVerificationToken = (userId: string, email: string) => {
+  // Verification tokens should last longer ( 24 hours)
+  return jwt.sign(
+    { userId, email },
+    process.env.JWT_SECRET!,
+    { expiresIn: '24h' }
+  );
+};
+
 export const verifyToken = (token: string, isRefresh = false) => {
   const secret = isRefresh ? process.env.JWT_REFRESH_SECRET! : process.env.JWT_SECRET!;
   return jwt.verify(token, secret) as { userId: string; email: string };
