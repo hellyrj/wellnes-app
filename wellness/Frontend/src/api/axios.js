@@ -11,9 +11,11 @@ const axiosInstance = axios.create({
   timeout: 30000, // 30 second timeout
 });
 
-// Request interceptor - add auth token from cookie
+// Request interceptor - add auth token from cookie (if not HTTP-only)
+// Note: If backend uses HTTP-only cookies, browser sends them automatically via withCredentials
 axiosInstance.interceptors.request.use(
   (config) => {
+    // Try to get token from cookie (works for non-HTTP-only cookies)
     const token = Cookies.get('access_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -36,33 +38,16 @@ axiosInstance.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        // Attempt to refresh token
-        const refreshToken = Cookies.get('refresh_token');
-        if (refreshToken) {
-          const response = await axios.post(
-            `${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/auth/refresh-token`,
-            { refreshToken },
-            { withCredentials: true }
-          );
+        // Attempt to refresh token - backend handles cookies automatically
+        const response = await axios.post(
+          `${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/auth/refresh-token`,
+          {},
+          { withCredentials: true }
+        );
 
-          const { accessToken, refreshToken: newRefreshToken } = response.data.data;
-          
-          // Set new cookies
-          Cookies.set('access_token', accessToken, { 
-            secure: true, 
-            sameSite: 'strict',
-            expires: 1 // 1 day
-          });
-          Cookies.set('refresh_token', newRefreshToken, { 
-            secure: true, 
-            sameSite: 'strict',
-            expires: 7 // 7 days
-          });
-
-          // Retry original request with new token
-          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-          return axiosInstance(originalRequest);
-        }
+        // Backend sets new cookies via HTTP-only, no need to set them manually
+        // Retry original request
+        return axiosInstance(originalRequest);
       } catch (refreshError) {
         // Refresh failed, clear cookies and redirect to login
         Cookies.remove('access_token');

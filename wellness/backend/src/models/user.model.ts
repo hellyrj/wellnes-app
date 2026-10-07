@@ -1,8 +1,6 @@
 //1. prisma user type (for internal use only)
 import {User as PrismaUser} from '@prisma/client'
-
 // re-export prisma types for internal use
-
 export type User = PrismaUser;
 
 //2. request DTO (what clients sends)

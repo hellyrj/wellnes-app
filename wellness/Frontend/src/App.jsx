@@ -12,16 +12,10 @@ import { LogOut, Heart, BookOpen, Smile, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { authApi } from './api/auth.js';
 
-const DEFAULT_MOODS = [];
 const DEFAULT_JOURNALS = [];
 
 export default function App() {
   // ---- DATA STATE ----
-  const [moods, setMoods] = useState(() => {
-    const saved = localStorage.getItem('wellness_moods');
-    return saved ? JSON.parse(saved) : DEFAULT_MOODS;
-  });
-
   const [journals, setJournals] = useState(() => {
     const saved = localStorage.getItem('wellness_journals');
     return saved ? JSON.parse(saved) : DEFAULT_JOURNALS;
@@ -44,10 +38,6 @@ export default function App() {
 
   // Sync to local storage
   useEffect(() => {
-    localStorage.setItem('wellness_moods', JSON.stringify(moods));
-  }, [moods]);
-
-  useEffect(() => {
     localStorage.setItem('wellness_journals', JSON.stringify(journals));
   }, [journals]);
 
@@ -67,18 +57,6 @@ export default function App() {
   };
 
   // ---- APP DATABASE MUTATIONS ----
-  const handleAddMood = (mood, note, date) => {
-    if (!currentUser) return;
-    const newEntry = {
-      id: `mood-entry-${Date.now()}`,
-      userId: currentUser.id,
-      mood,
-      note,
-      date
-    };
-    setMoods(prev => [newEntry, ...prev]);
-  };
-
   const handleAddJournal = (title, content, mood) => {
     if (!currentUser) return;
     const newEntry = {
@@ -217,8 +195,6 @@ export default function App() {
 
               {activeTab === 'mood' && (
                 <MoodTrackerView 
-                  moods={moods} 
-                  onAddMood={handleAddMood} 
                   userId={currentUser.id} 
                 />
               )}

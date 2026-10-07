@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
+import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -22,6 +23,9 @@ app.use(cors({
     : ['http://localhost:5173', 'http://192.168.56.1:5173'],
   credentials: true,
 }));
+
+// Cookie Parser - required for reading HTTP-only cookies
+app.use(cookieParser());
 
 // Rate Limiting
 const limiter = rateLimit({
